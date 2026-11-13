@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seed Story Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: one question per screen in a centred card, like a storybook page. Single warm theme by choice. */
+  --bg:#fbf7ef;
+  --card:#ffffff;
+  --ink:#24212c;
+  --muted:#6f6979;
+  --line:#ebe3d3;
+  --pumpkin:#e8761c;
+  --pumpkin-soft:#fff1e2;
+  --seed:#c9a227;
+  --seed-soft:#fbf3d8;
+  --leaf:#2f8f6f;
+  --leaf-soft:#e2f3eb;
+  --sky:#3d6fd1;
+  --sky-soft:#e8effd;
+  --display:"Fredoka","Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",Verdana,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+header{max-width:720px;margin:0 auto;padding:14px 20px 0;display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:1.1rem;white-space:nowrap}
+.bar{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pumpkin);border-radius:99px;transition:width .3s}
+.small{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:4px;white-space:nowrap}
+
+main{max-width:720px;margin:0 auto;padding:18px 20px 60px}
+.card{background:var(--card);border-radius:28px;padding:32px;box-shadow:0 2px 0 var(--line),0 12px 30px rgba(60,45,20,.06)}
+@media (max-width:520px){.card{padding:22px 18px;border-radius:22px}}
+.anim{animation:in .25s ease}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.coach{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px}
+.face{width:58px;height:58px;flex:none;border-radius:50%;background:var(--seed-soft);display:grid;place-items:center;font-size:36px}
+.say{background:var(--sky-soft);border-radius:4px 18px 18px 18px;padding:10px 14px;font-size:1rem}
+
+h1{font-family:var(--display);font-weight:700;font-size:2rem;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px}
+.lbl{display:block;font-weight:700;margin:16px 0 6px}
+input[type=text],textarea,select{width:100%;border:2.5px solid var(--line);border-radius:16px;padding:14px 16px;background:#fff;font-size:1.1rem}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--sky);outline:none}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:99px;padding:8px 14px;cursor:pointer;font-size:.98rem}
+.chip:hover{border-color:var(--pumpkin)}
+.chip.sel{background:var(--pumpkin);border-color:var(--pumpkin);color:#fff}
+
+.big2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.big2{grid-template-columns:1fr}}
+.pick{border:2.5px solid var(--line);background:#fff;border-radius:20px;padding:18px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px}
+.pick b{font-family:var(--display);font-weight:600;font-size:1.2rem}
+.pick span{color:var(--muted);font-size:.95rem}
+.pick:hover{border-color:var(--pumpkin)}
+.pick.sel{border-color:var(--pumpkin);background:var(--pumpkin-soft)}
+.pick .em{font-size:34px;line-height:1}
+
+.critters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:520px){.critters{grid-template-columns:repeat(3,1fr)}}
+.crit{border:2.5px solid var(--line);background:#fff;border-radius:18px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;font-family:var(--display);font-weight:600;font-size:.95rem}
+.crit .e{font-size:42px;line-height:1.15}
+.crit.sel{border-color:var(--pumpkin);background:var(--pumpkin-soft)}
+
+.helpbtn{margin-top:18px;border:2px dashed var(--sky);background:#fff;color:var(--sky);border-radius:99px;padding:8px 16px;cursor:pointer;font-family:var(--display);font-weight:600}
+.help{margin-top:12px;background:var(--sky-soft);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.help p{margin:0}
+.help .ex{font-style:italic}
+
+.nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:28px}
+.btn{border:none;border-radius:99px;padding:15px 30px;font-family:var(--display);font-weight:600;font-size:1.2rem;cursor:pointer}
+.go{background:var(--pumpkin);color:#fff;box-shadow:0 4px 0 #b95a10}
+.go:hover{filter:brightness(1.05)}
+.go:active{transform:translateY(2px);box-shadow:0 2px 0 #b95a10}
+.ghost{background:transparent;color:var(--muted);padding:15px 10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* 8-box strip */
+.strip{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:0 0 18px}
+.sq{height:34px;border-radius:9px;background:var(--line);display:grid;place-items:center;font-family:var(--display);font-weight:600;font-size:.9rem;color:var(--muted);border:none;padding:0}
+.sq.full{background:var(--leaf);color:#fff}
+.sq.now{background:var(--pumpkin);color:#fff;box-shadow:0 0 0 3px var(--pumpkin-soft)}
+.recall{background:var(--leaf-soft);border-radius:16px;padding:10px 14px;font-size:.95rem;margin-bottom:6px}
+.recall b{font-family:var(--display);font-weight:600}
+
+.pvs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.pv{border-radius:16px;padding:12px;font-size:.95rem}
+.pv.p{background:var(--pumpkin-soft)}
+.pv.s{background:var(--seed-soft)}
+.pv b{font-family:var(--display);display:block}
+
+.formula{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--display);font-weight:600;font-size:1.2rem;margin-bottom:6px}
+.formula span{background:var(--leaf-soft);color:var(--leaf);border-radius:10px;padding:4px 12px}
+.formula .eq{background:var(--pumpkin);color:#fff}
+
+.endrows{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;font-size:.95rem}
+.endrows div{background:var(--leaf-soft);border-radius:12px;padding:8px 12px}
+.endrows b{font-family:var(--display);font-weight:600}
+
+/* Hub + final plan */
+.hub{display:flex;flex-direction:column;gap:10px}
+.tile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:2.5px solid var(--line);background:#fff;border-radius:18px;padding:12px 14px;cursor:pointer}
+.tile:hover{border-color:var(--pumpkin)}
+.tile .n{width:38px;height:38px;flex:none;border-radius:12px;background:var(--line);display:grid;place-items:center;font-family:var(--display);font-weight:700;color:var(--muted)}
+.tile.full .n{background:var(--leaf);color:#fff}
+.tile .t{flex:1;min-width:0}
+.tile .t b{font-family:var(--display);font-weight:600;display:block}
+.tile .t span{color:var(--muted);font-size:.92rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile.full .t span{color:var(--ink)}
+.tile .arrow{color:var(--pumpkin);font-family:var(--display);font-weight:700}
+
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:620px){.board{grid-template-columns:1fr 1fr}}
+.cell{border:2px solid var(--line);border-radius:14px;padding:8px 10px;font-size:.9rem;min-height:96px;background:#fff}
+.cell .h{font-family:var(--display);font-weight:600;font-size:.8rem;color:var(--muted)}
+.cell.z{border-color:var(--pumpkin)}
+.cell.e{background:#faf7f0;color:var(--muted)}
+.wide{border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:.92rem;margin:8px 0}
+.wide .h{font-family:var(--display);font-weight:600;font-size:.8rem;color:var(--muted)}
+
+.checks{display:flex;flex-direction:column;gap:6px;margin:18px 0}
+.ck{display:flex;align-items:center;gap:10px;font-size:1rem;border:none;background:none;text-align:left;padding:4px 0;cursor:default}
+.ck .d{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--line);font-weight:700;color:#fff;font-size:.85rem}
+.ck.ok .d{background:var(--leaf)}
+.ck .fix{margin-left:auto}
+button.ck{cursor:pointer}
+
+.send{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.send .btn{width:100%}
+.sky{background:var(--sky);color:#fff;box-shadow:0 4px 0 #2a52a3}
+.status{font-size:.95rem;min-height:1.4em;text-align:center}
+.status.ok{color:var(--leaf)}
+.status.bad{color:#a33}
+details.how{font-size:.92rem;color:var(--muted);margin-top:6px}
+details.how summary{cursor:pointer}
+
+.modal{position:fixed;inset:0;background:rgba(36,33,44,.45);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+.modal.open{display:flex}
+.modal .mcard{background:#fff;border-radius:24px;padding:22px;max-width:760px;width:100%;max-height:88vh;overflow:auto}
+.mrow{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+main.wideMain{max-width:1180px}
+.hubgrid{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:start}
+@media (max-width:860px){.hubgrid{grid-template-columns:1fr}}
+.wordbank{background:var(--pumpkin-soft);border-radius:18px;padding:12px;position:sticky;top:12px}
+@media (max-width:860px){.wordbank{position:static}}
+.wbh{font-family:var(--display);font-weight:700;margin:0;font-size:1.05rem}
+.wbt{margin:2px 0 6px;font-size:.8rem;color:var(--muted)}
+.wbg{font-family:var(--display);font-weight:600;font-size:.85rem;margin:10px 0 4px;color:#b95a10}
+.wbl{display:flex;flex-wrap:wrap;gap:4px}
+.wbw{border:1.5px solid #f3c99c;background:#fff;border-radius:99px;padding:2px 8px;font-size:.8rem;cursor:pointer}
+.wbw:hover{border-color:var(--pumpkin)}
+.hrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 14px}
+@media (max-width:620px){.hrow{grid-template-columns:1fr}}
+.th{display:flex;justify-content:space-between;align-items:center;gap:6px;font-family:var(--display);font-weight:600;margin-bottom:6px;font-size:.98rem}
+.tiny{border:none;background:var(--sky-soft);color:var(--sky);border-radius:99px;padding:3px 10px;font-size:.78rem;cursor:pointer;font-family:var(--display);font-weight:600;white-space:nowrap}
+.table8{display:grid;grid-template-columns:repeat(4,1fr);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden}
+.table8 .tcell{padding:10px;border-right:2px solid var(--line);border-bottom:2px solid var(--line);background:#fff;display:flex;flex-direction:column}
+.table8 .tcell:nth-child(4n){border-right:none}
+.table8 .tcell:nth-child(n+5){border-bottom:none}
+.table8 .tcell.key{background:var(--leaf-soft)}
+.table8 .tcell.blank{background:#fff}
+.table8 .tcell.key.blank{background:#f4faf7}
+.table8 textarea{border:none;background:transparent;padding:4px 2px;min-height:150px;font-size:1rem;flex:1;border-radius:8px}
+.table8 textarea:focus{background:#fff;box-shadow:0 0 0 2.5px var(--sky)}
+@media (max-width:760px){.table8{grid-template-columns:1fr 1fr}.table8 .tcell:nth-child(4n){border-right:2px solid var(--line)}.table8 .tcell:nth-child(2n){border-right:none}.table8 .tcell:nth-child(n+5){border-bottom:2px solid var(--line)}.table8 .tcell:nth-child(n+7){border-bottom:none}.table8 textarea{min-height:110px}}
+footer{max-width:720px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:.85rem}
+footer summary{cursor:pointer}
+footer li{margin:4px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="24" rx="15" ry="13" fill="#e8761c"/><rect x="18" y="5" width="4" height="8" rx="2" fill="#2f8f6f"/><ellipse cx="27" cy="8" rx="5" ry="2.6" fill="#2f8f6f" transform="rotate(-20 27 8)"/></svg>Seed Story</div>
+  <div class="bar" id="bar" aria-hidden="true"><i id="barFill" style="width:0"></i></div>
+  <button class="small" id="peekTop" type="button">My plan</button>
+  <button class="small" id="resetBtn" type="button">Start over</button>
+</header>
+<main><div class="card anim" id="card"></div></main>
+<footer>
+  <details>
+    <summary>For teachers</summary>
+    <ul>
+      <li>Built on Adrienne Gear's <strong>Event Story</strong> structure (<em>Powerful Writing Structures</em>, Memory Pocket Writing): a real event, small enough to start and end in one day.</li>
+      <li>8-box planner, filled in Gear's order: <strong>beginning (Box 1) and ending (Box 8) first</strong>, then the middle (Box 4), then Boxes 2, 3, 5, 6, 7. Each box starts with a <strong>move-along word</strong>; "Suddenly" is left out because it signals a problem.</li>
+      <li>Box 8 is built in three parts: move-along word + what happened, <strong>Topic + Feeling = Ending</strong>, then a big thought (a lesson or why it matters).</li>
+      <li><strong>Zoom In</strong> follows <em>Stretching the Moment</em> with the six senses (feelings are the sixth). The hook step adapts <em>Hook Your Reader</em>.</li>
+      <li>One question per screen. Help (ideas, starters, examples) stays hidden until the student taps "Help me." Students can also choose to fill in the plan themselves from one page and open any part.</li>
+      <li>Plans save in the student's browser only. The Word file opens in Google Docs for Classroom.</li>
+    </ul>
+  </details>
+</footer>
+
+<div class="modal" id="resetModal" role="dialog" aria-modal="true" aria-labelledby="rT">
+  <div class="mcard" style="max-width:420px">
+    <h1 id="rT" style="font-size:1.5rem">Start a new plan?</h1>
+    <p>This clears your whole plan. Send it to your teacher first if you want to keep it.</p>
+    <div class="mrow"><button class="btn ghost" id="rNo" type="button">Keep it</button><button class="btn go" id="rYes" type="button">Clear it</button></div>
+  </div>
+</div>
+<div class="modal" id="planModal" role="dialog" aria-modal="true" aria-label="My plan so far">
+  <div class="mcard"><div id="planBody"></div><div class="mrow"><button class="btn go" id="planClose" type="button">Keep going</button></div></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- Data ---------- */
+const CRITTERS=[
+ {id:"otter",e:"🦦",n:"Otter",say:"Splish splash!"},{id:"owl",e:"🦉",n:"Owl",say:"Hoo hoo!"},
+ {id:"fox",e:"🦊",n:"Fox",say:"Yip yip!"},{id:"frog",e:"🐸",n:"Frog",say:"Ribbit!"},
+ {id:"beaver",e:"🦫",n:"Beaver",say:"Chomp chomp!"},{id:"bear",e:"🐻",n:"Bear",say:"Grrr-eat!"},
+ {id:"raccoon",e:"🦝",n:"Raccoon",say:"Psst!"},{id:"turtle",e:"🐢",n:"Turtle",say:"Slow and steady!"},
+ {id:"bee",e:"🐝",n:"Bee",say:"Bzzz!"},{id:"hedgehog",e:"🦔",n:"Hedgehog",say:"Snuffle!"},
+ {id:"penguin",e:"🐧",n:"Penguin",say:"Waddle waddle!"},{id:"octopus",e:"🐙",n:"Octopus",say:"Blub blub!"}
+];
+const NB=8,MI=3,EI=7;
+const IDEAS=["My first sleepover","Riding my bike without help","My first airplane ride","Jumping off the diving board","My first goal in soccer or hockey","My first time skating",
+ "Sleepover at Grandma's","Eating at a restaurant with my family","Baking with someone special","Getting a new pet","My birthday party","Snow day!",
+ "Going down a water slide","Roasting marshmallows at a campfire","Building a snow fort","Catching a fish","Our class field trip","When I lost my tooth"];
+const TR_START=["Last Saturday,","Last summer,","Yesterday,","One morning,","Last week,","On my birthday,","Last winter,","One day,"];
+const TR_MID=["First,","Then,","Next,","After that,","Later,","Later on,","Soon,","Afterwards,","Before that,","Meanwhile,","Just then,","When we got there,","The next day,"];
+const TR_END=["Finally,","At last,","At the end of the day,","Afterwards,","Later on,","The next morning,"];
+const ALL_TR=[...new Set([...TR_START,...TR_MID,...TR_END])].sort((a,b)=>b.length-a.length);
+const HOOKS=[
+ {id:"talk",em:"💬",n:"A conversation",ex:"“Hurry up, we’re going to miss the ferry!” Mom shouted."},
+ {id:"question",em:"❓",n:"A question",ex:"Have you ever been so nervous your stomach did flips?"},
+ {id:"describe",em:"🎨",n:"A description",ex:"The lake sparkled like a thousand tiny mirrors."},
+ {id:"exciting",em:"💥",n:"Something exciting",ex:"SPLASH! I hit the water so hard my goggles flew off."},
+ {id:"fact",em:"💡",n:"A fun fact",ex:"Did you know a hummingbird’s heart can beat over 1,000 times a minute? Mine felt just like that."}
+];
+const SENSES=[
+ {k:"see",n:"I see",ic:"👀",w:["sparkly","gigantic","tiny","shadowy","colourful"]},
+ {k:"hear",n:"I hear",ic:"👂",w:["crash","whisper","giggle","splash","thump"]},
+ {k:"smell",n:"I smell",ic:"👃",w:["smoky","sweet","buttery","salty","fresh"]},
+ {k:"taste",n:"I taste",ic:"👅",w:["sweet","sour","crunchy","sticky","gooey"]},
+ {k:"touch",n:"I touch / my body feels",ic:"✋",w:["icy","warm","prickly","squishy","shaky"]},
+ {k:"feel",n:"I feel inside",ic:"💛",w:["excited","nervous","proud","scared","relieved"]}
+];
+const SHOW=["My knees wobbled like jelly.","A giant grin stretched across my face.","My heart thumped like a drum.","I squeezed my eyes shut and held my breath."];
+const END_STARTERS=["That was the best ___ ever!","I can’t wait to ___ again!","I will never forget the day I ___!","___ is definitely NOT for me!"];
+const BIG={
+ lesson:{n:"A lesson I learned",em:"🎓",s:["That day I learned that ","Now I know that ","Next time, I will "]},
+ why:{n:"Why it matters to me",em:"💛",s:["This memory is special to me because ","Whenever I think about this day, I feel ","This day mattered because "]}
+};
+
+/* ---------- State ---------- */
+const KEY="seedStoryPlanner.simple.v1";
+function blank(){return{scr:0,mode:"",hub:false,name:"",critter:"",idea:"",boxes:Array.from({length:NB},()=>({tr:"",ev:"",det:""})),
+ endFeel:"",endFinal:"",bigType:"",big:"",hookType:"",hook:"",zoomBox:"",zoom:{see:"",hear:"",smell:"",taste:"",touch:"",feel:""},show:"",title:"",selfck:{},buddyName:"",pumpkin:""};}
+let S=blank();
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(blank(),JSON.parse(r));}catch(e){}
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}},200);}
+function getP(p){return p.split(".").reduce((o,k)=>o==null?o:o[k],S);}
+function setP(p,v){const k=p.split(".");let o=S;for(let i=0;i<k.length-1;i++)o=o[k[i]];o[k[k.length-1]]=v;save();}
+let helpOpen=false;
+
+/* ---------- Helpers ---------- */
+const $=s=>document.querySelector(s);
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function filled(s){return!!(s&&String(s).trim());}
+function short(s,n){s=String(s||"").trim();return s.length>n?s.slice(0,n-1)+"…":s;}
+function crit(){return CRITTERS.find(c=>c.id===S.critter)||null;}
+function buddy(){const c=crit();return c?c.n:"Buddy";}
+function nm(){return S.name.trim()||"writer";}
+function lowerFirst(s){return/^I\b/.test(s)?s:s.charAt(0).toLowerCase()+s.slice(1);}
+function upperFirst(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function BOXLAB_(i){return i===0?"Beginning":i===MI?"Middle":i===EI?"Ending":"";}
+function boxName(i){const l=BOXLAB_(i);return`Box ${i+1}${l?" · "+l:""}`;}
+function endingText(){return[S.boxes[EI].ev,S.endFeel,S.big].map(x=>String(x||"").trim()).filter(Boolean).join(" ");}
+function boxText(i){return i===EI?(filled(S.endFinal)?S.endFinal.trim():endingText()):String(S.boxes[i].ev||"").trim();}
+function trOf(i){const t=boxText(i);const own=S.boxes[i].tr;if(own&&t.startsWith(own))return own;return ALL_TR.find(x=>t.startsWith(x))||"";}
+function applyTr(i,t){const b=S.boxes[i];let txt=b.ev||"";const old=trOf(i)||b.tr;
+ if(old&&txt.startsWith(old))txt=txt.slice(old.length).trimStart();
+ if(b.tr===t){b.tr="";b.ev=txt?upperFirst(txt):"";}else{b.tr=t;b.ev=t+" "+(txt?lowerFirst(txt):"");}
+ if(i===EI)S.endFinal="";save();}
+function ta(path,ph,opts){opts=opts||{};const id="f_"+path.replace(/\./g,"_");return`${opts.label?`<label class="lbl" for="${id}">${opts.label}</label>`:""}${opts.input?`<input type="text" id="${id}" data-k="${path}" value="${esc(getP(path))}" placeholder="${esc(ph)}" autocomplete="off">`:`<textarea id="${id}" data-k="${path}" placeholder="${esc(ph)}"${opts.h?` style="min-height:${opts.h}px"`:""}>${esc(getP(path))}</textarea>`}`;}
+function trChips(i,list){const cur=S.boxes[i].tr;return`<div class="chips" role="group" aria-label="Move-along words">${list.map(t=>`<button type="button" class="chip${t===cur?" sel":""}" data-tr="${i}" data-text="${esc(t)}" aria-pressed="${t===cur}">${esc(t)}</button>`).join("")}</div>`;}
+function strip(now){return`<div class="strip" aria-label="Your 8 boxes">${S.boxes.map((_,i)=>`<button type="button" class="sq${i===now?" now":filled(boxText(i))?" full":""}" data-peek="1" aria-label="${boxName(i)}${filled(boxText(i))?", done":""}">${i+1}</button>`).join("")}</div>`;}
+function recall(list){const r=list.filter(i=>filled(boxText(i)));return r.length?r.map(i=>`<div class="recall"><b>Box ${i+1}:</b> ${esc(boxText(i))}</div>`).join(""):"";}
+function helpBox(inner){return`<button type="button" class="helpbtn" data-help="1" aria-expanded="${helpOpen}">${helpOpen?"Hide help":"🐾 Help me"}</button>${helpOpen?`<div class="help">${inner}</div>`:""}`;}
+
+/* ---------- Screens ---------- */
+/* each: id, say (critter line), q (question), body(), ok() for Next, hub tile info */
+const SC=[];
+function add(o){SC.push(o);}
+add({id:"name",q:"What's your name?",say:()=>"Hi! Let's plan a story about something that really happened to you.",
+ body:()=>ta("name","Type your first name",{input:true}),ok:()=>filled(S.name)});
+add({id:"critter",q:"Pick a writing buddy",say:()=>`Nice to meet you, ${esc(nm())}! Who will help you plan?`,
+ body:()=>`<div class="critters">${CRITTERS.map(c=>`<button type="button" class="crit${S.critter===c.id?" sel":""}" data-critter="${c.id}" aria-pressed="${S.critter===c.id}"><span class="e" aria-hidden="true">${c.e}</span>${c.n}</button>`).join("")}</div>`,ok:()=>!!S.critter});
+add({id:"mode",q:"How do you want to plan?",say:()=>`<b>${esc(crit().say)}</b> I'm ${esc(buddy())}! I can guide you one step at a time, or you can fill in your plan yourself. I'll help anytime!`,
+ body:()=>`<div class="big2"><button type="button" class="pick${S.mode==="guide"?" sel":""}" data-mode="guide"><span class="em">🧭</span><b>Guide me</b><span>One small step at a time.</span></button><button type="button" class="pick${S.mode==="free"?" sel":""}" data-mode="free"><span class="em">✏️</span><b>I'll do it myself</b><span>See my whole plan and fill it in.</span></button></div>`,ok:()=>!!S.mode,noNext:true});
+add({id:"idea",q:"What will you write about?",tile:"My seed idea",val:()=>S.idea,
+ say:()=>`Pick a <b>pumpkin seed</b>: one small moment, not the whole pumpkin. It should start and end in one day.`,
+ body:()=>`<div class="pvs"><div class="pv p"><b>🎃 Pumpkin (too big)</b>My summer holidays</div><div class="pv s"><b>🌱 Seed (just right)</b>The day I jumped off the dock</div></div>
+  ${ta("idea","e.g. The night a raccoon stole our marshmallows",{input:true})}
+  ${helpBox(`<p>Tap an idea to use it:</p><div class="chips">${IDEAS.map(x=>`<button type="button" class="chip${S.idea===x?" sel":""}" data-set="idea" data-text="${esc(x)}">${esc(x)}</button>`).join("")}</div>`)}`,ok:()=>filled(S.idea)});
+add({id:"b1",box:0,q:"How did it begin?",tile:boxName(0),
+ say:()=>`Writers plan the <b>beginning</b> and the <b>ending</b> first. Tap a move-along word, then tell what happened and where.`,
+ body:()=>`${strip(0)}${trChips(0,TR_START)}${ta("boxes.0.ev","e.g. Last summer, we went camping at Cultus Lake.",{label:"Box 1"})}
+  ${helpBox(`<p>Tell <b>what</b> was happening and <b>where</b> you were. Who was with you?</p><p class="ex">Example: Last Friday, I went to my cousin's house for a sleepover.</p>`)}`,ok:()=>filled(S.boxes[0].ev)});
+add({id:"e1",box:EI,q:"How did it end?",tile:boxName(EI),
+ say:()=>`Now jump to the end! Tap a move-along word, then finish the sentence.`,
+ body:()=>`${strip(EI)}${trChips(EI,TR_END)}${ta(`boxes.${EI}.ev`,"e.g. Finally, my mom picked me up.",{label:"What happened at the very end?",h:90})}
+  ${helpBox(`<p>A story that <b>ends</b> is different from a story that just <b>stops</b>. Tell the very last thing that happened.</p>`)}`,ok:()=>filled(S.boxes[EI].ev)});
+add({id:"e2",box:EI,q:"How did you feel?",
+ say:()=>`Here's a secret formula for endings!`,
+ body:()=>`<div class="formula"><span>Topic</span>+<span>Feeling</span><span class="eq">= Ending</span></div>
+  ${ta("endFeel","e.g. That was the best sleepover ever!",{input:true})}
+  ${helpBox(`<p>Tap a starter, then fill in the blank:</p><div class="chips">${END_STARTERS.map(x=>`<button type="button" class="chip" data-set="endFeel" data-text="${esc(x)}">${esc(x)}</button>`).join("")}</div>`)}`,ok:()=>filled(S.endFeel)});
+add({id:"e3",box:EI,q:"Why does this memory matter?",
+ say:()=>`Strong endings share a <b>big thought</b>. Pick one.`,
+ body:()=>`<div class="big2">${Object.entries(BIG).map(([k,o])=>`<button type="button" class="pick${S.bigType===k?" sel":""}" data-big="${k}"><span class="em">${o.em}</span><b>${o.n}</b></button>`).join("")}</div>
+  ${S.bigType?`${ta("big",BIG[S.bigType].s[0]+"…",{h:90,label:BIG[S.bigType].n})}${helpBox(`<p>Tap a starter:</p><div class="chips">${BIG[S.bigType].s.map(x=>`<button type="button" class="chip" data-set="big" data-text="${esc(x)}">${esc(x.trim())}…</button>`).join("")}</div>`)}`:""}`,ok:()=>filled(S.big)});
+add({id:"e4",box:EI,q:"Read your whole ending",
+ say:()=>`Read it out loud. Does it sound right? You can change any words.`,
+ body:()=>`<div class="endrows"><div><b>1.</b> ${esc(S.boxes[EI].ev)||"…"}</div><div><b>2.</b> ${esc(S.endFeel)||"…"}</div><div><b>3.</b> ${esc(S.big)||"…"}</div></div>
+  <label class="lbl" for="f_endFinal">Box 8 will say:</label><textarea id="f_endFinal" data-k="endFinal">${esc(boxText(EI))}</textarea>`,ok:()=>filled(boxText(EI))});
+add({id:"b4",box:MI,q:"What happened in the middle?",tile:boxName(MI),
+ say:()=>`Play your memory like a movie. What happened around the middle? One moment only!`,
+ body:()=>`${strip(MI)}${recall([0,EI])}${trChips(MI,TR_MID)}${ta(`boxes.${MI}.ev`,"e.g. After dinner, we watched a movie.",{label:"Box 4",h:90})}
+  ${helpBox(`<p>Sometimes the middle is the most exciting part. Sometimes it's just what happened next.</p><p>🌱 Stay inside your seed. Don't start a whole new story!</p>`)}`,ok:()=>filled(S.boxes[MI].ev)});
+[1,2,4,5,6].forEach(i=>add({id:"b"+(i+1),box:i,q:`What happened next?`,tile:boxName(i),
+ say:()=>{const prev=[...Array(i).keys()].reverse().find(k=>filled(boxText(k)));const nx=[...Array(NB).keys()].find(k=>k>i&&filled(boxText(k)));return`Let's fill in <b>Box ${i+1}</b>. What happened ${prev!=null?`after Box ${prev+1}`:""}${prev!=null&&nx!=null?" and ":""}${nx!=null?`before Box ${nx+1}`:""}?`;},
+ body:()=>{const prev=[...Array(i).keys()].reverse().find(k=>filled(boxText(k)));const nx=[...Array(NB).keys()].find(k=>k>i&&filled(boxText(k)));
+  return`${strip(i)}${recall([prev,nx].filter(x=>x!=null))}${trChips(i,TR_MID)}${ta(`boxes.${i}.ev`,"Tap a move-along word, then write what happened",{label:`Box ${i+1}`,h:90})}
+  ${helpBox(`<p>Write a few words, like a note. Pick only the most important moments.</p><p>🌱 Is it still part of <b>${esc(S.idea||"your seed")}</b>?</p>`)}`;},ok:()=>filled(S.boxes[i].ev)}));
+add({id:"hook",q:"How will you hook your reader?",tile:"My hook",val:()=>S.hook,
+ say:()=>`Your first sentence is like a fishing hook. Pick a kind of hook.`,
+ body:()=>{const h=HOOKS.find(x=>x.id===S.hookType);return`<div class="chips">${HOOKS.map(x=>`<button type="button" class="chip${S.hookType===x.id?" sel":""}" data-hook="${x.id}">${x.em} ${x.n}</button>`).join("")}</div>
+  ${h?`${ta("hook","Write your first sentence",{label:"My hook",h:90})}${helpBox(`<p class="ex">Example: ${esc(h.ex)}</p>`)}`:""}`;},ok:()=>filled(S.hook)});
+add({id:"z1",q:"Which moment will you zoom in on?",tile:"Zoom in",val:()=>S.zoomBox!==""?boxName(+S.zoomBox):"",
+ say:()=>`Pick the moment that matters most. We'll slow it down like a movie in slow motion.`,
+ body:()=>`<div class="hub">${S.boxes.map((_,i)=>`<button type="button" class="tile${String(S.zoomBox)===String(i)?" full":""}" data-zoom="${i}"><span class="n">${i+1}</span><span class="t"><span>${esc(short(boxText(i),70))||"(empty)"}</span></span></button>`).join("")}</div>`,ok:()=>S.zoomBox!==""});
+[["see","hear"],["smell","taste"],["touch","feel"]].forEach((pair,pi)=>add({id:"z"+(pi+2),q:pi===0?"What did you see and hear?":pi===1?"What did you smell and taste?":"How did your body feel? How did you feel inside?",
+ say:()=>pi===0?`Close your eyes. You're back in Box ${Number(S.zoomBox)+1}!`:pi===1?`Your nose and mouth remember things too. Skip one if it doesn't fit.`:`Feelings are a writer's sixth sense!`,
+ body:()=>pair.map(k=>{const s=SENSES.find(x=>x.k===k);return`${ta("zoom."+k,"Words or phrases",{input:true,label:s.ic+" "+s.n+"…"})}`;}).join("")+helpBox(pair.map(k=>{const s=SENSES.find(x=>x.k===k);return`<p>${s.n}:</p><div class="chips">${s.w.map(w=>`<button type="button" class="chip" data-add="zoom.${k}" data-text="${esc(w)}">${esc(w)}</button>`).join("")}</div>`;}).join("")),ok:()=>true}));
+add({id:"z5",q:"Show, don't tell",
+ say:()=>`Instead of writing “I was scared,” show what your body did!`,
+ body:()=>`${ta("show","e.g. My knees wobbled like jelly.",{input:true})}${helpBox(`<div class="chips">${SHOW.map(x=>`<button type="button" class="chip" data-set="show" data-text="${esc(x)}">${esc(x)}</button>`).join("")}</div>`)}`,ok:()=>true});
+add({id:"done",q:"Your plan is ready!",
+ say:()=>`<b>${esc((crit()||{}).say||"")}</b> Great planning, ${esc(nm())}! Check your list, then send your plan to your teacher.`,
+ body:()=>`${ta("title",S.idea||"My story title",{input:true,label:"Give your story a title"})}${checksHTML()}${planHTML_()}${sendHTML()}`,ok:()=>true,last:true});
+
+const IDX=id=>SC.findIndex(s=>s.id===id);
+const HUB=["idea","hook","b1","b2","b3","b4","b5","b6","b7","e4","z1"];
+
+/* ---------- Checklist ---------- */
+function checklist(){const trs=S.boxes.map((_,i)=>trOf(i)).filter(Boolean);const senses=Object.values(S.zoom).filter(filled).length;const free=S.mode==="free";
+ return[
+  {t:"My idea is one small moment",ok:free?!!S.selfck.seed:filled(S.idea),self:free,key:"seed",go:"idea"},
+  {t:"I have a hook",ok:filled(S.hook),go:"hook"},
+  {t:"All 8 boxes are filled in",ok:S.boxes.every((_,i)=>filled(boxText(i))),go:"b2"},
+  {t:"Every box has a move-along word",ok:trs.length===NB,go:"b2"},
+  {t:"I zoomed in with 3 senses or more",ok:S.zoomBox!==""&&senses>=3,go:"z1"},
+  {t:"My ending has topic + feeling",ok:free?!!S.selfck.feel:filled(S.endFeel),self:free,key:"feel",go:"e2"},
+  {t:"My ending has a big thought",ok:free?!!S.selfck.big:filled(S.big),self:free,key:"big",go:"e3"}
+ ];}
+function checksHTML(){return`<div class="checks">${checklist().map(c=>c.self?`<button type="button" class="ck${c.ok?" ok":""}" data-selfck="${c.key}" aria-pressed="${c.ok}"><span class="d">${c.ok?"✓":""}</span>${c.t} <span class="fix small" style="text-decoration:none">${c.ok?"":"Tap when done"}</span></button>`:`<div class="ck${c.ok?" ok":""}"><span class="d">${c.ok?"✓":""}</span>${c.t}${c.ok?"":`<button type="button" class="small fix" data-goto="${c.go}">Help me</button>`}</div>`).join("")}</div>`;}
+function planHTML_(){const z=String(S.zoomBox);const zt=SENSES.filter(s=>filled(S.zoom[s.k])).map(s=>`${s.ic} ${esc(S.zoom[s.k])}`).join(" · ");
+ return`<div class="wide"><div class="h">Hook</div>${esc(S.hook)||"…"}</div>
+ <div class="board">${S.boxes.map((_,i)=>`<div class="cell${filled(boxText(i))?"":" e"}${z===String(i)?" z":""}"><div class="h">${boxName(i)}${z===String(i)?" · zoom":""}</div>${esc(boxText(i))||"…"}</div>`).join("")}</div>
+ <div class="wide"><div class="h">Zoom in${z!==""?" on box "+(+z+1):""}</div>${zt||"…"}${filled(S.show)?`<br>${esc(S.show)}`:""}</div>`;}
+function sendHTML(){return`<h1 style="font-size:1.4rem;margin-top:24px">Send it to your teacher</h1>
+ <div class="send"><button class="btn go" type="button" id="dlBtn">Download for Google Docs</button><div class="status" id="dlStatus" role="status"></div>
+ <details class="how"><summary>How do I turn it in?</summary><ol><li>Tap <b>Download for Google Docs</b>.</li><li>Open your writing assignment in Google Classroom.</li><li>Tap <b>Add or create</b>, then <b>File</b>, and add your plan.</li><li>Tap <b>Turn in</b>.</li></ol></details>
+ <button class="btn sky" type="button" id="cpBtn">Copy my plan</button><div class="status" id="cpStatus" role="status"></div>
+ <details class="how"><summary>Where do I paste it?</summary><ol><li>Open the Google Doc your teacher gave you, or <a href="https://docs.new" target="_blank" rel="noopener">start a new Google Doc</a>.</li><li>Click in the Doc and press Ctrl + V.</li></ol></details></div>`;}
+
+/* ---------- Hub (do it myself) ---------- */
+function hubHTML(){const cells=S.boxes.map((_,i)=>{const v=i===EI?(filled(S.endFinal)?S.endFinal:endingText()):S.boxes[i].ev;const help=i===0?"b1":i===EI?"e1":"b"+(i+1);
+  const ph=i===0?"Move-along word + what and where":i===MI?"What happened in the middle?":i===EI?"How did it end? How did you feel? Why does it matter?":"Move-along word + what happened";
+  return`<div class="tcell${filled(v)?"":" blank"}${i===0||i===MI||i===EI?" key":""}"><div class="th"><label for="f_t${i}">${boxName(i)}</label><button type="button" class="tiny" data-open="${help}" aria-label="Help with ${boxName(i)}">🐾 Help</button></div>
+   <textarea id="f_t${i}" data-k="${i===EI?"endFinal":`boxes.${i}.ev`}" placeholder="${ph}">${esc(v)}</textarea></div>`;}).join("");
+ const zv=S.zoomBox!==""?boxName(+S.zoomBox)+": "+SENSES.filter(x=>filled(S.zoom[x.k])).map(x=>x.ic+" "+S.zoom[x.k]).join(" · "):"";
+ return`<div class="coach"><div class="face" aria-hidden="true">${(crit()||{e:"🌱"}).e}</div><div class="say">Fill in your plan, ${esc(nm())}! Start each box with a <b>move-along word</b>. Stuck? Tap <b>🐾 Help</b> on any box.</div></div>
+ <h1>My plan</h1>
+ <div class="hrow"><div><div class="th"><label for="f_idea">🌱 My seed idea</label><button type="button" class="tiny" data-open="idea">🐾 Help</button></div>${ta("idea","One small moment",{input:true})}</div>
+ <div><div class="th"><label for="f_hook">🎣 My hook</label><button type="button" class="tiny" data-open="hook">🐾 Help</button></div>${ta("hook","My first sentence",{input:true})}</div></div>
+ <div class="hubgrid"><aside class="wordbank" aria-label="Move-along words">
+   <p class="wbh">Move-along words</p><p class="wbt">Click in a box, then tap a word to add it.</p>
+   ${[["Beginning (Box 1)",TR_START],["Middle (Boxes 2–7)",TR_MID],["Ending (Box 8)",TR_END]].map(([h,l])=>`<p class="wbg">${h}</p><div class="wbl">${l.map(w=>`<button type="button" class="wbw" data-wb="${esc(w)}">${esc(w)}</button>`).join("")}</div>`).join("")}
+  </aside><div class="table8">${cells}</div></div>
+ <button type="button" class="tile${zv?" full":""}" data-open="z1" style="margin-top:12px"><span class="n">🔍</span><span class="t"><b>Zoom in on one moment</b><span>${zv?esc(short(zv,90)):"Pick a box and add what you saw, heard and felt"}</span></span><span class="arrow">→</span></button>
+ <div class="nav"><button class="btn ghost" type="button" data-mode="guide">Guide me instead</button><button class="btn go" type="button" data-open="done">I'm done →</button></div>`;}
+
+/* ---------- Render ---------- */
+function guidedRange(){return SC.length-IDX("idea");}
+function render(){
+ const card=$("#card");card.classList.remove("anim");void card.offsetWidth;card.classList.add("anim");
+ const s=SC[S.scr];
+ const pct=S.hub?0:Math.max(0,Math.min(100,Math.round((S.scr)/(SC.length-1)*100)));
+ $("#barFill").style.width=pct+"%";$("#bar").style.visibility=S.hub?"hidden":"visible";
+ $("#peekTop").style.display=S.scr>IDX("idea")||S.hub?"":"none";
+ document.querySelector("main").classList.toggle("wideMain",!!S.hub);
+ if(S.hub){card.innerHTML=hubHTML();return;}
+ const c=crit();
+ const fromHub=S.mode==="free"&&S.scr>=IDX("idea");
+ let next;
+ if(s.noNext)next="";
+ else if(fromHub&&s.id!=="done"){const chain=["e1","e2","e3"].includes(s.id);next=chain?`<button class="btn go" type="button" data-nav="1">Next →</button>`:`<button class="btn go" type="button" data-tohub="1">Save ✓</button>`;}
+ else if(s.last)next="";
+ else next=`<button class="btn go" type="button" data-nav="1"${s.ok()?"":" disabled"}>Next →</button>`;
+ const back=fromHub?`<button class="btn ghost" type="button" data-tohub="1">← My plan</button>`:S.scr>0?`<button class="btn ghost" type="button" data-nav="-1">← Back</button>`:"<span></span>";
+ card.innerHTML=`<div class="coach"><div class="face" aria-hidden="true">${c&&s.id!=="name"&&s.id!=="critter"?c.e:s.id==="critter"&&c?c.e:"🌱"}</div><div class="say">${s.say()}</div></div>
+  <h1>${s.q}</h1>${s.body()}<div class="nav">${back}${next}</div>`;
+ if(s.last)wireExport();
+ const f=card.querySelector("input[type=text],textarea");if(f&&!("ontouchstart" in window)){f.focus({preventScroll:true});const L=f.value.length;try{f.setSelectionRange(L,L);}catch(e){}}
+}
+function refreshNext(){const b=document.querySelector('[data-nav="1"]');if(b&&SC[S.scr].ok)b.disabled=!SC[S.scr].ok();}
+function go(i){S.scr=Math.max(0,Math.min(SC.length-1,i));helpOpen=false;save();render();window.scrollTo({top:0,behavior:"smooth"});}
+
+/* ---------- Events ---------- */
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.k;if(!k)return;setP(k,e.target.value);
+ const m=k.match(/^boxes\.(\d)\.ev$/);if(m){const i=+m[1];const b=S.boxes[i];if(b.tr&&!e.target.value.startsWith(b.tr)){b.tr="";save();document.querySelectorAll(`[data-tr="${i}"].sel`).forEach(x=>{x.classList.remove("sel");x.setAttribute("aria-pressed","false");});}if(i===EI)S.endFinal="";}
+ if(k==="endFeel"||k==="big")S.endFinal="";
+ if(k==="endFinal"&&e.target.value.trim()===endingText())S.endFinal="";
+ if(S.hub){const c=e.target.closest(".tcell");if(c)c.classList.toggle("blank",!filled(e.target.value));}
+ refreshNext();});
+let lastCell=null;
+document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest(".tcell"))lastCell=e.target.id;});
+document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+ if(d.wb){const f=lastCell&&document.getElementById(lastCell);if(!f){const say=document.querySelector(".say");if(say)say.innerHTML="Click in a box first, then tap a move-along word!";return;}
+  let txt=f.value;const old=ALL_TR.find(x=>txt.startsWith(x));if(old)txt=txt.slice(old.length).trimStart();
+  const nv=d.wb+" "+(txt?lowerFirst(txt):"");f.value=nv;setP(f.dataset.k,nv);const m=f.dataset.k.match(/^boxes\.(\d)\.ev$/);if(m)S.boxes[+m[1]].tr=d.wb;else S.boxes[EI].tr=d.wb;save();
+  f.closest(".tcell").classList.remove("blank");f.focus();f.setSelectionRange(nv.length,nv.length);return;}
+ if(d.critter){S.critter=d.critter;save();render();return;}
+ if(d.mode){S.mode=d.mode;if(d.mode==="free"){S.hub=true;}else{S.hub=false;if(S.scr<=IDX("mode"))S.scr=IDX("idea");}save();render();window.scrollTo({top:0});return;}
+ if(d.nav){go(S.scr+(+d.nav));return;}
+ if(d.tohub){S.hub=true;helpOpen=false;save();render();window.scrollTo({top:0});return;}
+ if(d.open){S.hub=false;go(IDX(d.open));return;}
+ if(d.goto){$("#planModal").classList.remove("open");S.hub=false;go(IDX(d.goto));return;}
+ if(d.help){helpOpen=!helpOpen;render();return;}
+ if(d.peek){$("#planBody").innerHTML=`<h1 style="font-size:1.5rem">My plan so far</h1>${planHTML_()}`;$("#planModal").classList.add("open");$("#planClose").focus();return;}
+ if(d.tr!=null){applyTr(+d.tr,d.text);render();return;}
+ if(d.set){let v=d.text;if(d.set===`boxes.${EI}.ev`){}setP(d.set,v);if(d.set==="endFeel"||d.set==="big")S.endFinal="";const f=document.querySelector(`[data-k="${d.set}"]`);if(f){f.value=v;f.focus();const b=v.indexOf("___");if(b>=0)f.setSelectionRange(b,b+3);else f.setSelectionRange(v.length,v.length);}refreshNext();
+  document.querySelectorAll(`[data-set="${d.set}"]`).forEach(x=>x.classList.toggle("sel",x===t&&d.set==="idea"));return;}
+ if(d.add){const cur=getP(d.add)||"";const v=cur.trim()?cur.replace(/[\s,]+$/,"")+", "+d.text:d.text;setP(d.add,v);const f=document.querySelector(`[data-k="${d.add}"]`);if(f)f.value=v;return;}
+ if(d.big){S.bigType=d.big;save();render();return;}
+ if(d.hook){S.hookType=d.hook;save();render();return;}
+ if(d.zoom){S.zoomBox=d.zoom;save();render();refreshNext();return;}
+ if(d.selfck){S.selfck[d.selfck]=!S.selfck[d.selfck];save();render();return;}
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape")document.querySelectorAll(".modal.open").forEach(m=>m.classList.remove("open"));
+ if(e.key==="Enter"&&e.target.tagName==="INPUT"){const b=document.querySelector('[data-nav="1"]:not([disabled])')||document.querySelector('[data-tohub]:not(.ghost)');if(b){e.preventDefault();b.click();}}
+});
+$("#resetBtn").addEventListener("click",()=>{$("#resetModal").classList.add("open");$("#rNo").focus();});
+$("#rNo").addEventListener("click",()=>$("#resetModal").classList.remove("open"));
+$("#rYes").addEventListener("click",()=>{S=blank();try{localStorage.removeItem(KEY);}catch(e){}$("#resetModal").classList.remove("open");render();});
+$("#planClose").addEventListener("click",()=>$("#planModal").classList.remove("open"));
+$("#peekTop").addEventListener("click",()=>{$("#planBody").innerHTML=`<h1 style="font-size:1.5rem">My plan so far</h1>${planHTML_()}`;$("#planModal").classList.add("open");$("#planClose").focus();});
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open");}));
+
+/* ---------- Export content model ---------- */
+function exportModel(){const c=crit();
+ return{
+  title:S.title.trim()||S.idea.trim()||"My Personal Narrative",
+  name:S.name.trim(),buddy:c?(filled(S.buddyName)?`${S.buddyName.trim()} the ${c.n}`:c.n):"",
+  pumpkin:S.pumpkin.trim(),seed:S.idea.trim(),
+  hookType:S.hookType?HOOKS.find(h=>h.id===S.hookType).n:"",hook:S.hook.trim(),
+  boxes:S.boxes.map((_,i)=>({n:i+1,lab:BOXLAB_(i),tr:trOf(i),ev:boxText(i),det:i!==EI?S.boxes[i].det.trim():"",detLab:i===0?"With":"Detail",zoom:String(S.zoomBox)===String(i)})),
+  zoomBox:S.zoomBox!==""?Number(S.zoomBox)+1:"",senses:SENSES.map(s=>({n:s.n,v:S.zoom[s.k].trim()})),show:S.show.trim(),
+  bigLab:S.bigType?BIG[S.bigType].n:"",
+  checks:checklist()
+ };}
+function boxBody(x){if(!x.tr||!x.ev.startsWith(x.tr))return{tr:"",rest:x.ev};return{tr:x.tr,rest:x.ev.slice(x.tr.length)};}
+
+function planHTML(){const m=exportModel();const td='style="border:1px solid #999;padding:8px;vertical-align:top;width:25%"';
+ const box=x=>{const b=boxBody(x);return `<td ${td}><b>${x.n}${x.lab?". "+x.lab:""}${x.zoom?" ★ ZOOM IN":""}</b><br>${b.tr?`<b>${esc(b.tr)}</b>`:""}${esc(b.rest)||"&nbsp;"}${x.det?`<br><i>${x.detLab}: ${esc(x.det)}</i>`:""}</td>`;};
+ return `<h1>${esc(m.title)}</h1>
+ <p><b>Name:</b> ${esc(m.name)} &nbsp; <b>Date:</b> ____________${m.buddy?` &nbsp; <b>Writing buddy:</b> ${esc(m.buddy)}`:""}</p>
+ <h2>My Seed Story</h2>
+ ${m.pumpkin?`<p><b>Pumpkin topic:</b> ${esc(m.pumpkin)}</p>`:""}<p><b>Seed (one small moment):</b> ${esc(m.seed)}</p>
+ <h2>Hook${m.hookType?` (${esc(m.hookType)})`:""}</h2><p>${esc(m.hook)||"&nbsp;"}</p>
+ <h2>Event Story Planner</h2>
+ <table style="border-collapse:collapse;width:100%"><tr>${m.boxes.slice(0,4).map(box).join("")}</tr><tr>${m.boxes.slice(4).map(box).join("")}</tr></table>
+ <h2>Zoom In${m.zoomBox?` on Box ${m.zoomBox}`:""}</h2>
+ <ul>${m.senses.map(s=>`<li><b>${esc(s.n)}:</b> ${esc(s.v)}</li>`).join("")}<li><b>Show, don't tell:</b> ${esc(m.show)}</li></ul>
+ <h2>Writer's Checklist</h2><ul>${m.checks.map(c=>`<li>${c.ok?"☑":"☐"} ${esc(c.t)}</li>`).join("")}</ul>`;}
+
+function planText(){const m=exportModel();const L=[];
+ L.push(m.title.toUpperCase(),`Name: ${m.name}    Date: ________`+(m.buddy?`    Writing buddy: ${m.buddy}`:""),"");
+ L.push("MY SEED STORY");if(m.pumpkin)L.push("Pumpkin topic: "+m.pumpkin);L.push("Seed (one small moment): "+m.seed,"");
+ L.push("HOOK"+(m.hookType?` (${m.hookType})`:""),m.hook,"");
+ L.push("EVENT STORY PLANNER");m.boxes.forEach(x=>{L.push(`${x.n}${x.lab?". "+x.lab:""}${x.zoom?" ★ ZOOM IN":""}: ${x.ev}`);if(x.det)L.push(`   ${x.detLab}: ${x.det}`);});L.push("");
+ L.push("ZOOM IN"+(m.zoomBox?` ON BOX ${m.zoomBox}`:""));m.senses.forEach(s=>L.push(`${s.n}: ${s.v}`));L.push("Show, don't tell: "+m.show,"");
+ L.push("WRITER'S CHECKLIST");m.checks.forEach(c=>L.push(`${c.ok?"[x]":"[ ]"} ${c.t}`));
+ return L.join("\n");}
+
+/* ---------- DOCX builder ---------- */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function zip(files){const enc=new TextEncoder();const parts=[];const central=[];let off=0;
+ files.forEach(f=>{const name=enc.encode(f.name);const data=typeof f.data==="string"?enc.encode(f.data):f.data;const crc=crc32(data);
+  const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,0,true);h.setUint16(12,0x21,true);
+  h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,name.length,true);h.setUint16(28,0,true);
+  parts.push(new Uint8Array(h.buffer),name,data);
+  const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,0,true);c.setUint16(14,0x21,true);
+  c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);c.setUint32(42,off,true);
+  central.push(new Uint8Array(c.buffer),name);off+=30+name.length+data.length;});
+ const csize=central.reduce((a,b)=>a+b.length,0);const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,csize,true);e.setUint32(16,off,true);
+ return new Blob(parts.concat(central,[new Uint8Array(e.buffer)]),{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});}
+function x(s){return String(s==null?"":s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function run(t,o){o=o||{};const rp=`<w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial" w:eastAsia="Arial"/>${o.b?"<w:b/>":""}${o.i?"<w:i/>":""}${o.color?`<w:color w:val="${o.color}"/>`:""}<w:sz w:val="${o.sz||24}"/></w:rPr>`;
+ return String(t).split("\n").map((ln,i)=>`<w:r>${rp}${i?"<w:br/>":""}<w:t xml:space="preserve">${x(ln)}</w:t></w:r>`).join("");}
+function para(runs,o){o=o||{};return `<w:p><w:pPr><w:spacing w:before="${o.before||0}" w:after="${o.after==null?80:o.after}"/>${o.shade?`<w:shd w:val="clear" w:color="auto" w:fill="${o.shade}"/>`:""}</w:pPr>${runs}</w:p>`;}
+function H(t){return para(run(t,{b:true,sz:28,color:"C25E0E"}),{before:200,after:80});}
+function LV(l,v,lines){return para(run(l+": ",{b:true})+run(v||(lines?"_".repeat(40):"")));}
+function cell(content,w,fill){return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${fill?`<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`:""}<w:tcMar><w:top w:w="100" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="100" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar></w:tcPr>${content}</w:tc>`;}
+function table(rows,widths){const tot=widths.reduce((a,b)=>a+b,0);const bd=k=>`<w:${k} w:val="single" w:sz="8" w:space="0" w:color="9A8F80"/>`;
+ return `<w:tbl><w:tblPr><w:tblW w:w="${tot}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>${["top","left","bottom","right","insideH","insideV"].map(bd).join("")}</w:tblBorders></w:tblPr><w:tblGrid>${widths.map(w=>`<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>${rows.map(r=>`<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="2600" w:hRule="atLeast"/></w:trPr>${r}</w:tr>`).join("")}</w:tbl>`;}
+function buildDocx(){const m=exportModel();const W=10080;const cw=2520;let b="";
+ b+=para(run(m.title,{b:true,sz:40}),{after:60});
+ b+=para(run("Personal Narrative Plan · Event Story",{i:true,color:"6B6577",sz:22}),{after:160});
+ b+=para(run("Name: ",{b:true})+run(m.name||"________________")+run("     Date: ",{b:true})+run("____________")+(m.buddy?run("     Writing buddy: ",{b:true})+run(m.buddy):""),{after:120});
+ b+=H("My Seed Story");if(m.pumpkin)b+=LV("Pumpkin topic",m.pumpkin);b+=LV("Seed (one small moment)",m.seed,true);
+ b+=H("Hook"+(m.hookType?" ("+m.hookType+")":""));b+=para(run(m.hook||"_".repeat(60)));
+ b+=H("Event Story Planner");
+ const bc=bx=>{const bb=boxBody(bx);return cell(para(run(`${bx.n}${bx.lab?". "+bx.lab:""}`,{b:true,sz:22})+(bx.zoom?run("   ★ ZOOM IN",{b:true,sz:20,color:"C25E0E"}):""),{after:60})+para((bb.tr?run(bb.tr,{b:true,color:"C25E0E"}):"")+run(bb.rest||" "))+(bx.det?para(run(bx.detLab+": "+bx.det,{i:true,sz:22})):""),cw,bx.zoom?"FFF0E1":null);};
+ b+=table([m.boxes.slice(0,4).map(bc).join(""),m.boxes.slice(4).map(bc).join("")],[cw,cw,cw,cw]);
+ b+=H("Zoom In"+(m.zoomBox?" on Box "+m.zoomBox:""));
+ const sr=(s)=>`${cell(para(run(s.n,{b:true,sz:22})),3000,"E7EEFC")}${cell(para(run(s.v||" ")),W-3000)}`;
+ b+=`<w:tbl><w:tblPr><w:tblW w:w="${W}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>${["top","left","bottom","right","insideH","insideV"].map(k=>`<w:${k} w:val="single" w:sz="6" w:space="0" w:color="C8BFB0"/>`).join("")}</w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="3000"/><w:gridCol w:w="${W-3000}"/></w:tblGrid>${m.senses.concat([{n:"Show, don't tell",v:m.show}]).map(s=>`<w:tr><w:trPr><w:cantSplit/></w:trPr>${sr(s)}</w:tr>`).join("")}</w:tbl>`;
+ 
+ b+=H("Writer's Checklist");m.checks.forEach(c=>{b+=para(run((c.ok?"☑ ":"☐ ")+c.t,{sz:22}),{after:40});});
+ const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${b}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+ return zip([
+  {name:"[Content_Types].xml",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`},
+  {name:"_rels/.rels",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`},
+  {name:"word/document.xml",data:doc}
+ ]);}
+window.__buildDocx=buildDocx;window.__S=()=>S;window.__setS=o=>{S=Object.assign(blank(),o);render(false);};
+
+/* ---------- Export wiring ---------- */
+let downloadsNS;let dlProbe=null;
+const browserSaver={save:({filename,data})=>{const url=URL.createObjectURL(data);const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);return Promise.resolve({status:"saved"});}};
+function getDownloads(){if(!dlProbe){dlProbe=(window.claude&&typeof window.claude.use==="function")?window.claude.use("downloads").then(ns=>{downloadsNS=ns;return ns;}).catch(()=>null):Promise.resolve(browserSaver);}return dlProbe;}
+function fileName(){const n=(S.name.trim()||"student").replace(/[^\w\- ]+/g,"").trim()||"student";return `${n} - Personal Narrative Plan.docx`;}
+function wireExport(){
+ const dl=$("#dlBtn"),st=$("#dlStatus"),cp=$("#cpBtn"),cs=$("#cpStatus");
+ getDownloads().then(ns=>{if(!ns&&dl&&document.body.contains(dl)){dl.style.display="none";const h=dl.parentNode.querySelector("details.how");if(h)h.style.display="none";}});
+ if(dl)dl.addEventListener("click",async()=>{st.className="status";st.textContent="Getting your file ready…";
+  try{const ns=await getDownloads();if(!ns){st.className="status bad";st.textContent="Downloading isn't available here. Use Copy my plan instead.";return;}
+   await ns.save({filename:fileName(),data:buildDocx()});st.className="status ok";st.textContent="Saved! Now upload it to your Google Classroom assignment.";}
+  catch(err){st.className="status bad";const c=err&&err.code;st.textContent=c==="declined"?"No file saved. Tap the button again when you're ready.":c==="rate_limited"?"One moment, then try again.":"That didn't work. Use Copy my plan instead.";}});
+ if(cp)cp.addEventListener("click",async()=>{const html=planHTML(),text=planText();
+  try{if(navigator.clipboard&&window.ClipboardItem){await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})})]);}
+   else{await navigator.clipboard.writeText(text);}
+   cs.className="status ok";cs.textContent="Copied! Open your Google Doc and press Ctrl + V.";}
+  catch(e1){try{await navigator.clipboard.writeText(text);cs.className="status ok";cs.textContent="Copied! Open your Google Doc and press Ctrl + V.";}
+   catch(e2){cs.className="status bad";cs.textContent="Copying was blocked. Ask your teacher for help.";}}});
+}
+
+
+
+render();
+})();
+</script>
+</body>
+</html>
